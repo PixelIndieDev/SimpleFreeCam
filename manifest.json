@@ -1,0 +1,11 @@
+{
+  "name": "SimpleFreeCam",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/PixelIndieDev/SimpleFreeCam",
+  "description": "A simple mod that adds a freecam to Lethal Company",
+  "dependencies": [
+    "BepInEx-BepInExPack-5.4.2305",
+    "AinaVT-LethalConfig-1.4.6",
+    "Rune580-LethalCompany_InputUtils-0.7.13"
+  ]
+}
