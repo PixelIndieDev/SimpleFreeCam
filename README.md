@@ -12,6 +12,7 @@ A simple mod that adds a freecam to Lethal Company. This mod is intended to be u
 - Scroll wheel adjusts the freecam movement speed
 - Sprint key boosts camera speed while held
 - Locking the freecam returns movement control to your player while retaining the view of the freecam
+- Lets you change the freecam's FOV
 - Fully works with the Company Cruiser
 
 ## Controls
