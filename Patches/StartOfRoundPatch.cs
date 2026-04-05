@@ -11,5 +11,13 @@ namespace SimpleFreeCam.Patches
         {
             __instance.StartCoroutine(FreeCamClass.SetupFreecam());
         }
+
+        //reset the freecam on level change
+        [HarmonyPatch("ChangeLevel")]
+        [HarmonyPostfix]
+        private static void OnChangeLevel(StartOfRound __instance)
+        {
+            FreeCamClass.ResetFreeCam();
+        }
     }
 }

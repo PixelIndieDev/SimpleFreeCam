@@ -33,6 +33,10 @@ namespace SimpleFreeCam
             InputActionsInstance = new SimpleFreeCamInputs();
             InputActionsInstance.PixelIndieDev_FreeCamKey.performed += FreeCamClass.SetFreeCamera_performed;
             InputActionsInstance.PixelIndieDev_FreeCamMovementKey.performed += FreeCamClass.ToggleFreecamMovement_performed;
+            InputActionsInstance.PixelIndieDev_FreeCamFOVModifierKey.performed += ctx => FreeCamClass.ToggleFOVSwitch_performed(true);
+            InputActionsInstance.PixelIndieDev_FreeCamFOVModifierKey.canceled += ctx => FreeCamClass.ToggleFOVSwitch_performed(false);
+            InputActionsInstance.PixelIndieDev_FreeCamResetFOVKey.performed += FreeCamClass.ResetFOV_performance;
+            InputActionsInstance.PixelIndieDev_FreeCamTeleportToPlayerKey.performed += FreeCamClass.TeleportFreeCamToPlayer_performance;
 
             FreeCamConfigEntry = Config.Bind("General", "Reset speed on freecam", false, "When enabled, the freecam movement speed resets to the default speed every time freecam is activated.");
             var checkbox = new BoolCheckBoxConfigItem(FreeCamConfigEntry, new BoolCheckBoxOptions

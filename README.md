@@ -17,9 +17,12 @@ A simple mod that adds a freecam to Lethal Company. This mod is intended to be u
 ## Controls
 | Action | Default Key |
 | ------------- | ------------- |
-| Toggle freecam | C |
-| Toggle movement | V |
-| Increase / decrease speed | Scroll wheel |
+| Enable/Disable FreeCam (Toggle) | C |
+| Enable/Disable FreeCam Player Movement (Toggle) | Z |
+| Teleport FreeCam To Player | T |
+| Scroll Changes FOV (Hold) | LeftAlt |
+| Reset FOV | F |
+| Increase / decrease camera speed/FOV | Scroll wheel (Up - Down) |
 
 ## Configuration
 All settings are available in the LethalConfig menu in-game.
@@ -29,7 +32,6 @@ All settings are available in the LethalConfig menu in-game.
 | Reset speed on freecam | false |
 | Default Freecam Speed | 1.0 |
 
-> [!IMPORTANT]
 > All players in the lobby are required to have the `SimpleFreeCam` mod installed. Clients without the mod will receive an generic "an error occurred" message and be sent back to the main menu.
 
 ## Compatibility

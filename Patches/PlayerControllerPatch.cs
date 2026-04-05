@@ -8,6 +8,8 @@ namespace SimpleFreeCam.Patches
     [HarmonyPatch(typeof(PlayerControllerB))]
     internal static class PlayerControllerPatch
     {
+        private static int originalSensitivity = -1;
+
         [HarmonyPatch("Awake")]
         [HarmonyPostfix]
         private static void OnAwake(PlayerControllerB __instance)
@@ -68,8 +70,50 @@ namespace SimpleFreeCam.Patches
             if (!FreeCamClass.isInFreeCam) return true;
             if (FreeCamClass.lockFreeCam) return true;
 
-            FreeCamClass.AdjustSpeed(context.ReadValue<float>());
+            float scrollDelta = context.ReadValue<float>();
+            if (FreeCamClass.shouldChangeFOV)
+            {
+                FreeCamClass.AdjustFOV(scrollDelta > 0 ? -FreeCamFOVInfo.ScrollStep : FreeCamFOVInfo.ScrollStep);
+            }
+            else
+            {
+                FreeCamClass.AdjustSpeed(scrollDelta);
+            }
             return false;
+        }
+
+        [HarmonyPatch("LateUpdate")]
+        [HarmonyPostfix]
+        static void FreecamLateUpdatePatch(PlayerControllerB __instance)
+        {
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return;
+            if (__instance != StartOfRound.Instance.localPlayerController) return;
+
+            var compass = StartOfRound.Instance.freeCinematicCameraTurnCompass;
+            StartOfRound.Instance.freeCinematicCamera.transform.rotation = compass.rotation;
+            StartOfRound.Instance.freeCinematicCamera.transform.position = compass.position;
+        }
+
+        [HarmonyPatch("PlayerLookInput")]
+        [HarmonyPrefix]
+        static void PlayerLookInputPatch(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return;
+
+            originalSensitivity = IngamePlayerSettings.Instance.settings.lookSensitivity;
+            IngamePlayerSettings.Instance.settings.lookSensitivity = Mathf.Clamp(Mathf.RoundToInt(IngamePlayerSettings.Instance.settings.lookSensitivity * FreeCamClass.GetFOVSensitivityMultiplier()), 1, originalSensitivity);
+        }
+
+        [HarmonyPatch("PlayerLookInput")]
+        [HarmonyPostfix]
+        static void Postfix(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return;
+
+            // Restore original sensitivity immediately after
+            IngamePlayerSettings.Instance.settings.lookSensitivity = originalSensitivity;
         }
     }
 }
