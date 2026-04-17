@@ -1,3 +1,6 @@
+## v1.2.1
+- A warning now displays in the UI when 'Reset freecam transform on freecam' is enabled
+
 ## v1.2.0
 - Added UI to the freecam view
 - Added an option to automatically reset the freecam transform when activating freecam

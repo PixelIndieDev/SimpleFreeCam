@@ -1,6 +1,6 @@
 {
   "name": "SimpleFreeCam",
-  "version_number": "1.2.0",
+  "version_number": "1.2.1",
   "website_url": "https://github.com/PixelIndieDev/SimpleFreeCam",
   "description": "A simple mod that adds a freecam to Lethal Company",
   "dependencies": [
