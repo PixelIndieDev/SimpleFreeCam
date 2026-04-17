@@ -1,9 +1,12 @@
 ﻿using GameNetcodeStuff;
+using SimpleFreeCam.Patches;
+using SimpleFreeCam.UI;
 using System.Collections;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 namespace SimpleFreeCam
 {
@@ -14,7 +17,6 @@ namespace SimpleFreeCam
         private static Transform playerAudioListener;
 
         private static PlayerControllerB playerController = null;
-        internal static bool isInVehicle = false;
         internal static bool shouldChangeFOV = false;
 
         private static Transform mainCameraTransform;
@@ -25,7 +27,8 @@ namespace SimpleFreeCam
         internal static bool lockFreeCam = false;
         internal static bool isInFreeCam = false;
 
-        internal static float freecamSpeed = 3f;
+        internal static float freecamSpeed = FreeCamSpeedInfo.DefaultSpeed;
+        private static bool hasChangedSpeed = false;
         private static bool hasBootedAlready = false;
 
         private static float PlayerSavedCameraUp = 0f;
@@ -48,6 +51,12 @@ namespace SimpleFreeCam
 
             FreeCam = StartOfRound.Instance.freeCinematicCamera;
             playerAudioListener = playerController.transform.Find("ScavengerModel/metarig/CameraContainer/MainCamera/PlayerAudioListener");
+
+            if (FreeCamHUD.Instance == null)
+            {
+                var hudGo = new GameObject("SimpleFreeCamHUD");
+                hudGo.AddComponent<FreeCamHUD>();
+            }
         }
 
         public static void SetFreeCamera_performed(InputAction.CallbackContext obj)
@@ -59,13 +68,16 @@ namespace SimpleFreeCam
 
             typeof(PlayerControllerB).GetMethod("SetFreeCamera_performed", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(playerController, new object[] { obj });
 
-            if (isInFreeCam)
+            if (!playerController.inTerminalMenu && !playerController.isTypingChat)
             {
-                DisableFreecam();
-            }
-            else if (!playerController.isPlayerDead)
-            {
-                EnableFreecam();
+                if (isInFreeCam)
+                {
+                    DisableFreecam();
+                }
+                else if (!playerController.isPlayerDead)
+                {
+                    EnableFreecam();
+                }
             }
         }
 
@@ -96,7 +108,7 @@ namespace SimpleFreeCam
             DisableFreecamOnLock();
         }
 
-        public static void ResetFOV_performance(InputAction.CallbackContext obj)
+        public static void ResetFOV_performed(InputAction.CallbackContext obj)
         {
             if (!obj.performed)
             {
@@ -118,7 +130,7 @@ namespace SimpleFreeCam
             FreeCamSavedCameraUp = 0f;
         }
 
-        public static void TeleportFreeCamToPlayer_performance(InputAction.CallbackContext obj)
+        public static void TeleportFreeCamToPlayer_performed(InputAction.CallbackContext obj)
         {
             if (!obj.performed)
             {
@@ -131,16 +143,6 @@ namespace SimpleFreeCam
             }
 
             TeleportFreeCamToPlayer();
-        }
-
-        public static void SetPlayerController(PlayerControllerB controller)
-        {
-            playerController = controller;
-        }
-
-        public static void SetInVehicle(bool inVehicle)
-        {
-            isInVehicle = inVehicle;
         }
 
         public static void SetFreecamLocation(Vector3 position)
@@ -170,11 +172,7 @@ namespace SimpleFreeCam
             Quaternion newRotation;
             if (playerController != null)
             {
-                Vector3 forward = playerController.gameplayCamera.transform.forward;
-                forward.y = 0;
-                forward.Normalize();
-
-                newRotation = Quaternion.LookRotation(forward, Vector3.up);
+                newRotation = Quaternion.LookRotation(GetPlayerForwardWithoutPitch());
             } else
             {
                 newRotation = default;
@@ -184,11 +182,24 @@ namespace SimpleFreeCam
             StartOfRound.Instance.freeCinematicCameraTurnCompass.rotation = newRotation;
         }
 
+        private static void ResetFreeCamTransform(float offset)
+        {
+            TeleportFreeCamToPlayer(offset);
+            ResetFreeCamRotation();
+        }
+
         public static void TeleportFreeCamToPlayer(float offset)
         {
             Vector3 playerCamPosition = playerController.gameplayCamera.transform.position;
-            playerCamPosition += playerController.gameplayCamera.transform.forward * offset;
+            playerCamPosition += GetPlayerForwardWithoutPitch() * offset;
             SetFreecamLocation(playerCamPosition);
+        }
+
+        private static Vector3 GetPlayerForwardWithoutPitch()
+        {
+            Vector3 forward = playerController.gameplayCamera.transform.forward;
+            forward.y = 0f;
+            return forward.normalized;
         }
 
         private static void EnableFreecam()
@@ -206,15 +217,36 @@ namespace SimpleFreeCam
                 freecamSpeed = SimpleFreeCamPatchBase.instance.FreeCamConfigEntryFloat.Value;
 
                 //teleport freecam to player on first "boot"
-                TeleportFreeCamToPlayer(-1);
-                //reset rotation
-                ResetFreeCamRotation();
+                ResetFreeCamTransform(-1);
+            }
+
+            //reset on each open
+            if (SimpleFreeCamPatchBase.instance.FreeCamConfigEntryResetTransform.Value)
+            {
+                ResetFreeCamTransform(-1);
+            } else
+            {
+                //reset when too far away
+                if (SimpleFreeCamPatchBase.instance.FreeCamConfigEntryResetDistance.Value)
+                {
+                    //camera is further away
+                    if (ShouldDistanceReset())
+                    {
+                        ResetFreeCamTransform(-1);
+                    }
+                }
             }
 
             //reset each time on enable
             if (SimpleFreeCamPatchBase.instance.FreeCamConfigEntry.Value)
             {
                 freecamSpeed = SimpleFreeCamPatchBase.instance.FreeCamConfigEntryFloat.Value;
+            } else
+            {
+                if (!hasChangedSpeed)
+                {
+                    freecamSpeed = SimpleFreeCamPatchBase.instance.FreeCamConfigEntryFloat.Value;
+                }
             }
 
             SwitchCameraUpField(true);
@@ -226,12 +258,29 @@ namespace SimpleFreeCam
             StartOfRound.Instance.freeCinematicCameraTurnCompass.rotation = freeCameraTransform.rotation;
             StartOfRound.Instance.SwitchCamera(FreeCam);
 
+            FreeCamHUD.ResetHideUI();
             HUDObject.SetActive(false);
             playerController.thisPlayerModelArms.enabled = false;
             playerModel.shadowCastingMode = ShadowCastingMode.On;
             playerAudioListener.SetParent(freeCameraTransform, false);
 
             HUDManager.Instance.HideHUD(true);
+        }
+
+        private static bool ShouldDistanceReset()
+        {
+            if (SimpleFreeCamPatchBase.instance.FreeCamConfigEntryResetDistance.Value)
+            {
+                float SqrDistanceThreshold = SimpleFreeCamPatchBase.instance.FreeCamConfigEntryInt.Value * SimpleFreeCamPatchBase.instance.FreeCamConfigEntryInt.Value;
+                Vector3 camDistanceBetween = playerController.transform.localPosition - FreeCam.transform.localPosition;
+                return camDistanceBetween.sqrMagnitude > SqrDistanceThreshold;
+            }
+            return false;
+        }
+
+        public static void TickDistanceWarning()
+        {
+            FreeCamHUD.TriggerDistanceWarning(ShouldDistanceReset());
         }
 
         private static void SwitchCameraUpField(bool switchToFreeCam)
@@ -264,7 +313,6 @@ namespace SimpleFreeCam
             lockFreeCam = false;
             isInFreeCam = false;
 
-
             playerController.isFreeCamera = false;
             StartOfRound.Instance.freeCinematicCamera.enabled = false;
             StartOfRound.Instance.SwitchCamera(playerController.isPlayerDead ? StartOfRound.Instance.spectateCamera : playerController.gameplayCamera);
@@ -289,6 +337,17 @@ namespace SimpleFreeCam
             if (!isInFreeCam || lockFreeCam) return;
 
             freecamSpeed = Mathf.Clamp(freecamSpeed + (scrollDelta > 0 ? FreeCamSpeedInfo.ScrollStep : -FreeCamSpeedInfo.ScrollStep), FreeCamSpeedInfo.MinSpeed, FreeCamSpeedInfo.MaxSpeed);
+            if (!hasChangedSpeed) hasChangedSpeed = true;
+        }
+
+        internal static void UpdateSpeed(float newSpeed)
+        {
+            if (!hasChangedSpeed) freecamSpeed = newSpeed;
+        }
+
+        internal static bool IsInVehicle()
+        {
+            return playerController != null && playerController.inVehicleAnimation;
         }
 
         internal static float GetSpeed() => freecamSpeed;

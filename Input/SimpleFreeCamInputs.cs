@@ -20,5 +20,8 @@ namespace SimpleFreeCam.Input
 
         [InputAction(KeyboardControl.F, Name = "Reset FOV")]
         public InputAction PixelIndieDev_FreeCamResetFOVKey { get; set; }
+
+        [InputAction(KeyboardControl.H, Name = "Hide UI")]
+        public InputAction PixelIndieDev_FreeCamHideUI { get; set; }
     }
 }

@@ -9,29 +9,37 @@ namespace SimpleFreeCam.Patches
     internal static class PlayerControllerPatch
     {
         private static int originalSensitivity = -1;
+        private static Vector3 compassPositionBeforeUpdate;
 
-        [HarmonyPatch("Awake")]
-        [HarmonyPostfix]
-        private static void OnAwake(PlayerControllerB __instance)
+        [HarmonyPatch("Update")]
+        [HarmonyPrefix]
+        private static void SaveCompassPosition(PlayerControllerB __instance)
         {
-            if (!__instance.IsOwner || !__instance.IsLocalPlayer)
+            if (__instance.IsOwner && __instance == StartOfRound.Instance.localPlayerController && FreeCamClass.isInFreeCam)
             {
-                return;
+                //capture pre move location
+                compassPositionBeforeUpdate = StartOfRound.Instance.freeCinematicCameraTurnCompass.position;
             }
-
-            FreeCamClass.SetPlayerController(__instance);
         }
 
         [HarmonyPatch("Update")]
         [HarmonyPostfix]
         private static void ApplyFreecamMovement(PlayerControllerB __instance)
         {
-            if (!__instance.IsOwner) return;
+            if (!__instance.IsOwner || __instance != StartOfRound.Instance.localPlayerController) return;
             if (!FreeCamClass.isInFreeCam) return;
+            if (__instance.inTerminalMenu || __instance.isTypingChat)
+            {
+                FreeCamClass.DisableFreecam();
+                return;
+            }
+            FreeCamClass.TickDistanceWarning();
             if (FreeCamClass.lockFreeCam) return;
 
-            if (FreeCamClass.isInVehicle) return;
-
+            Transform compass = StartOfRound.Instance.freeCinematicCameraTurnCompass;
+            //reset position back to pre move capture
+            compass.position = compassPositionBeforeUpdate;
+            //now we have a baseline, we can now add our own movement without it being multiplied
             Vector2 move = IngamePlayerSettings.Instance.playerInput.actions.FindAction("Move").ReadValue<Vector2>();
             float sprint = IngamePlayerSettings.Instance.playerInput.actions.FindAction("Sprint").ReadValue<float>();
 
@@ -39,8 +47,6 @@ namespace SimpleFreeCam.Patches
 
             float speed = FreeCamClass.GetSpeed();
             if (sprint > 0.5f) speed *= FreeCamSpeedInfo.SprintMultiplier;
-
-            Transform compass = StartOfRound.Instance.freeCinematicCameraTurnCompass;
             compass.position += (compass.right * move.x + compass.forward * move.y) * speed * Time.deltaTime;
 
             StartOfRound.Instance.freeCinematicCamera.transform.position = Vector3.Lerp(StartOfRound.Instance.freeCinematicCamera.transform.position, compass.position, 3f * Time.deltaTime);
@@ -66,11 +72,12 @@ namespace SimpleFreeCam.Patches
         [HarmonyPrefix]
         private static bool InterceptScroll(PlayerControllerB __instance, InputAction.CallbackContext context)
         {
-            if (!__instance.IsOwner) return true;
-            if (!FreeCamClass.isInFreeCam) return true;
-            if (FreeCamClass.lockFreeCam) return true;
+            if (!__instance.IsOwner || __instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!context.performed) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
 
-            float scrollDelta = context.ReadValue<float>();
+            float scrollDelta = Mathf.Clamp(context.ReadValue<float>(), -1f, 1f);
+            if (scrollDelta == 0f) return false;
             if (FreeCamClass.shouldChangeFOV)
             {
                 FreeCamClass.AdjustFOV(scrollDelta > 0 ? -FreeCamFOVInfo.ScrollStep : FreeCamFOVInfo.ScrollStep);
@@ -114,6 +121,165 @@ namespace SimpleFreeCam.Patches
 
             // Restore original sensitivity immediately after
             IngamePlayerSettings.Instance.settings.lookSensitivity = originalSensitivity;
+        }
+        
+        [HarmonyPatch("Crouch_performed")]
+        [HarmonyPrefix]
+        static bool PatchCrouch(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("Jump_performed")]
+        [HarmonyPrefix]
+        static bool PatchJump(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("Interact_performed")]
+        [HarmonyPrefix]
+        static bool PatchInteract(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("ClickHoldInteraction")]
+        [HarmonyPrefix]
+        static bool BlockHoldInteract(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("ItemSecondaryUse_performed")]
+        [HarmonyPrefix]
+        static bool PatchItemSecUSe(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("ItemTertiaryUse_performed")]
+        [HarmonyPrefix]
+        static bool PatchTertiary(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("ActivateItem_performed")]
+        [HarmonyPrefix]
+        static bool PatchActivateItemPerf(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("ActivateItem_canceled")]
+        [HarmonyPrefix]
+        static bool PatchActivateItemCanc(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("Discard_performed")]
+        [HarmonyPrefix]
+        static bool PatchDiscard(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("ScrollMouse_performed")]
+        [HarmonyPrefix]
+        static bool PatchScroll(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("InspectItem_performed")]
+        [HarmonyPrefix]
+        static bool PatchInspect(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("Emote1_performed")]
+        [HarmonyPrefix]
+        static bool PatchEmote1(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("Emote2_performed")]
+        [HarmonyPrefix]
+        static bool PatchEmote2(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("UseUtilitySlot_performed")]
+        [HarmonyPrefix]
+        static bool PatchUtility(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            return false;
+        }
+
+        [HarmonyPatch("SetHoverTipAndCurrentInteractTrigger")]
+        [HarmonyPrefix]
+        static bool BlockHoverTip(PlayerControllerB __instance)
+        {
+            if (__instance != StartOfRound.Instance.localPlayerController) return true;
+            if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
+
+            if (__instance.hoveringOverTrigger != null)
+            {
+                __instance.hoveringOverTrigger.StopInteraction();
+                __instance.previousHoveringOverTrigger = __instance.hoveringOverTrigger;
+                __instance.hoveringOverTrigger = null;
+            }
+            __instance.cursorIcon.enabled = false;
+            __instance.cursorTip.text = "";
+
+            return false;
         }
     }
 }
