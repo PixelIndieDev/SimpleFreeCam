@@ -127,15 +127,20 @@ namespace SimpleFreeCam.UI
 
         private static bool ShouldShowWarning()
         {
-            if (SimpleFreeCamPatchBase.instance.FreeCamConfigEntryResetTransform.Value)
+            if (!SimpleFreeCamPatchBase.instance.FreeCamConfigDisableShowWarningReset.Value)
             {
-                currentWarningReason = WarningReason.ResetWarning;
-                return true;
+                if (SimpleFreeCamPatchBase.instance.FreeCamConfigEntryResetTransform.Value)
+                {
+                    currentWarningReason = WarningReason.ResetWarning;
+                    return true;
+                }
             }
 
-            if (ShowDistanceWarning) {
-                currentWarningReason = WarningReason.DistanceWarning;
-                return true;
+            if (!SimpleFreeCamPatchBase.instance.FreeCamConfigDisableShowWarningDistance.Value) {
+                if (ShowDistanceWarning) {
+                    currentWarningReason = WarningReason.DistanceWarning;
+                    return true;
+                }
             }
             return false;
         }

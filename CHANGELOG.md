@@ -1,3 +1,9 @@
+## v1.2.2
+- Added the option to always hide the reset transform warning
+- Added the option to always hide the far away distance warning
+- Changed 'Reset freecam transform on freecam' to 'Reset freecam location and rotation on freecam' for clarity
+- Fixed broken gifs in the readme on the Thunderstore page
+
 ## v1.2.1
 - A warning now displays in the UI when 'Reset freecam transform on freecam' is enabled
 

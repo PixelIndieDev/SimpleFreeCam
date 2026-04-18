@@ -27,6 +27,8 @@ namespace SimpleFreeCam
         internal ConfigEntry<bool> FreeCamConfigEntryHideUI;
         internal ConfigEntry<bool> FreeCamConfigEntryDefaultUIVisiblity;
         internal ConfigEntry<float> FreeCamConfigEntryFloatOpacity;
+        internal ConfigEntry<bool> FreeCamConfigDisableShowWarningDistance;
+        internal ConfigEntry<bool> FreeCamConfigDisableShowWarningReset;
 
         internal ManualLogSource logSource;
 
@@ -48,7 +50,7 @@ namespace SimpleFreeCam
             InputActionsInstance.PixelIndieDev_FreeCamTeleportToPlayerKey.performed += FreeCamClass.TeleportFreeCamToPlayer_performed;
             InputActionsInstance.PixelIndieDev_FreeCamHideUI.performed += FreeCamHUD.HideUI_performed;
 
-            FreeCamConfigEntryResetTransform = Config.Bind("Transform", "Reset freecam transform on freecam", false, "When enabled, the freecam will teleport to the player's current position and rotation every time freecam is activated.");
+            FreeCamConfigEntryResetTransform = Config.Bind("Transform", "Reset freecam location and rotation on freecam", false, "When enabled, the freecam will teleport to the player's current position and rotation every time freecam is activated.");
             var checkbox2 = new BoolCheckBoxConfigItem(FreeCamConfigEntryResetTransform, new BoolCheckBoxOptions
             {
                 RequiresRestart = false
@@ -119,6 +121,20 @@ namespace SimpleFreeCam
                 RequiresRestart = false
             });
             LethalConfigManager.AddConfigItem(checkbox4);
+
+            FreeCamConfigDisableShowWarningReset = Config.Bind("Warnings", "Disable showing reset transform warning", false, "When enabled, the freecam UI will never show the reset transform warning on screen.");
+            var checkbox7 = new BoolCheckBoxConfigItem(FreeCamConfigDisableShowWarningReset, new BoolCheckBoxOptions
+            {
+                RequiresRestart = false
+            });
+            LethalConfigManager.AddConfigItem(checkbox7);
+
+            FreeCamConfigDisableShowWarningDistance = Config.Bind("Warnings", "Disable showing distance warning", false, "When enabled, the freecam UI will never show the far away distance warning on screen.");
+            var checkbox6 = new BoolCheckBoxConfigItem(FreeCamConfigDisableShowWarningDistance, new BoolCheckBoxOptions
+            {
+                RequiresRestart = false
+            });
+            LethalConfigManager.AddConfigItem(checkbox6);
 
             harmony.PatchAll(typeof(SimpleFreeCamPatchBase));
             harmony.PatchAll(typeof(StartOfRoundPatch));
