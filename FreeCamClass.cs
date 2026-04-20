@@ -1,12 +1,10 @@
 ﻿using GameNetcodeStuff;
-using SimpleFreeCam.Patches;
 using SimpleFreeCam.UI;
 using System.Collections;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
-using UnityEngine.UI;
 
 namespace SimpleFreeCam
 {

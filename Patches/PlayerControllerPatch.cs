@@ -13,6 +13,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("Update")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         private static void SaveCompassPosition(PlayerControllerB __instance)
         {
             if (__instance.IsOwner && __instance == StartOfRound.Instance.localPlayerController && FreeCamClass.isInFreeCam)
@@ -24,6 +25,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("Update")]
         [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
         private static void ApplyFreecamMovement(PlayerControllerB __instance)
         {
             if (!__instance.IsOwner || __instance != StartOfRound.Instance.localPlayerController) return;
@@ -55,6 +57,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("KillPlayer")]
         [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
         private static void OnPlayerDeath(PlayerControllerB __instance)
         {
             if (!__instance.IsOwner)
@@ -70,6 +73,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("ScrollMouse_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         private static bool InterceptScroll(PlayerControllerB __instance, InputAction.CallbackContext context)
         {
             if (!__instance.IsOwner || __instance != StartOfRound.Instance.localPlayerController) return true;
@@ -91,6 +95,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("LateUpdate")]
         [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
         static void FreecamLateUpdatePatch(PlayerControllerB __instance)
         {
             if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return;
@@ -103,6 +108,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("PlayerLookInput")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static void PlayerLookInputPatch(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return;
@@ -114,6 +120,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("PlayerLookInput")]
         [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
         static void Postfix(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return;
@@ -125,6 +132,7 @@ namespace SimpleFreeCam.Patches
         
         [HarmonyPatch("Crouch_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchCrouch(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -135,6 +143,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("Jump_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchJump(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -145,6 +154,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("Interact_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchInteract(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -155,6 +165,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("ClickHoldInteraction")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool BlockHoldInteract(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -165,6 +176,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("ItemSecondaryUse_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchItemSecUSe(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -175,6 +187,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("ItemTertiaryUse_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchTertiary(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -185,6 +198,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("ActivateItem_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchActivateItemPerf(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -195,6 +209,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("ActivateItem_canceled")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchActivateItemCanc(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -205,6 +220,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("Discard_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchDiscard(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -215,6 +231,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("ScrollMouse_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchScroll(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -225,6 +242,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("InspectItem_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchInspect(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -235,6 +253,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("Emote1_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchEmote1(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -245,6 +264,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("Emote2_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchEmote2(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -255,6 +275,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("UseUtilitySlot_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool PatchUtility(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;
@@ -265,6 +286,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("SetHoverTipAndCurrentInteractTrigger")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         static bool BlockHoverTip(PlayerControllerB __instance)
         {
             if (__instance != StartOfRound.Instance.localPlayerController) return true;

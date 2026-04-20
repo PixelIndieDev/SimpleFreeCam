@@ -1,3 +1,6 @@
+## v1.3.0
+- Fixed an issue where this mod’s functions could be overridden by other mods
+
 ## v1.2.2
 - Added the option to always hide the reset transform warning
 - Added the option to always hide the far away distance warning

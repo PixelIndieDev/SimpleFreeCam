@@ -7,6 +7,7 @@ namespace SimpleFreeCam.Patches
     {
         [HarmonyPatch("Start")]
         [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
         private static void OnGameEntered(StartOfRound __instance)
         {
             __instance.StartCoroutine(FreeCamClass.SetupFreecam());
@@ -15,6 +16,7 @@ namespace SimpleFreeCam.Patches
         //reset the freecam on level change
         [HarmonyPatch("ChangeLevel")]
         [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
         private static void OnChangeLevel(StartOfRound __instance)
         {
             FreeCamClass.ResetFreeCam();

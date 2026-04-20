@@ -10,6 +10,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("PingScan_performed")]
         [HarmonyPrefix]
+        [HarmonyPriority(Priority.Last)]
         private static bool DisableScanning(HUDManager __instance)
         {
             if (!FreeCamClass.isInFreeCam || FreeCamClass.lockFreeCam) return true;
@@ -18,6 +19,7 @@ namespace SimpleFreeCam.Patches
 
         [HarmonyPatch("Update")]
         [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
         private static void DisableScanHUD(HUDManager __instance)
         {
             if(!FreeCamClass.isInFreeCam) return;
