@@ -6,6 +6,10 @@ A simple mod that adds a freecam to Lethal Company. This mod is intended to be u
 ![Cinematic preview 03](https://github.com/PixelIndieDev/SimpleFreeCam/blob/main/Docs/clip_cinematic_view_02.gif?raw=true)
 ![Cinematic preview 04](https://github.com/PixelIndieDev/SimpleFreeCam/blob/main/Docs/clip_cinematic_view_04.gif?raw=true)
 
+> As of version 1.4.0, the issue where held items appeared incorrectly in freecam has been fixed!
+
+> The videos on this page are from an older version where the bug was still present
+
 ## Installation
 1. Install `BepInEx`
 2. Install `LethalConfig`

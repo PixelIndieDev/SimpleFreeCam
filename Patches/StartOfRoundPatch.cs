@@ -19,7 +19,17 @@ namespace SimpleFreeCam.Patches
         [HarmonyPriority(Priority.Last)]
         private static void OnChangeLevel(StartOfRound __instance)
         {
+            FreeCamClass.isInMenu = false;
             FreeCamClass.ResetFreeCam();
+        }
+
+        [HarmonyPatch("OnLocalDisconnect")]
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
+        private static void OnDisconnect(StartOfRound __instance)
+        {
+            FreeCamClass.isInMenu = true;
+            FreeCamClass.DisableFreecam();
         }
     }
 }

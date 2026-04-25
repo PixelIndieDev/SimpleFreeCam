@@ -1,3 +1,9 @@
+## v1.4.0
+- Fixed an issue that caused items to be held incorrectly in freecam
+- Fixed an issue that caused players to stand up from chairs while moving in freecam
+- Fixed an issue where the freecam would not be disabled when going back to the main menu
+- Fixed an issue where the freecam could be enabled while in the main menu
+
 ## v1.3.0
 - Fixed an issue where this mod’s functions could be overridden by other mods
 

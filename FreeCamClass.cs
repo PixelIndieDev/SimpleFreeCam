@@ -24,6 +24,7 @@ namespace SimpleFreeCam
 
         internal static bool lockFreeCam = false;
         internal static bool isInFreeCam = false;
+        internal static bool isInMenu = true;
 
         internal static float freecamSpeed = FreeCamSpeedInfo.DefaultSpeed;
         private static bool hasChangedSpeed = false;
@@ -63,6 +64,8 @@ namespace SimpleFreeCam
             {
                 return;
             }
+
+            if (isInMenu) return;
 
             typeof(PlayerControllerB).GetMethod("SetFreeCamera_performed", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(playerController, new object[] { obj });
 
@@ -262,6 +265,12 @@ namespace SimpleFreeCam
             playerModel.shadowCastingMode = ShadowCastingMode.On;
             playerAudioListener.SetParent(freeCameraTransform, false);
 
+            if (playerController.currentlyHeldObjectServer != null)
+            {
+                playerController.currentlyHeldObjectServer.parentObject = playerController.serverItemHolder;
+            }
+
+
             HUDManager.Instance.HideHUD(true);
         }
 
@@ -319,6 +328,11 @@ namespace SimpleFreeCam
             playerController.thisPlayerModelArms.enabled = true;
             playerModel.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
             playerAudioListener.SetParent(mainCameraTransform, false);
+
+            if (playerController.currentlyHeldObjectServer != null)
+            {
+                playerController.currentlyHeldObjectServer.parentObject = playerController.localItemHolder;
+            }
 
             HUDManager.Instance.HideHUD(playerController.isPlayerDead);
         }

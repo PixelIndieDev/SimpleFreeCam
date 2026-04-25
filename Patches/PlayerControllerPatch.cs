@@ -1,5 +1,8 @@
 ﻿using GameNetcodeStuff;
 using HarmonyLib;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -21,6 +24,33 @@ namespace SimpleFreeCam.Patches
                 //capture pre move location
                 compassPositionBeforeUpdate = StartOfRound.Instance.freeCinematicCameraTurnCompass.position;
             }
+        }
+
+        [HarmonyPatch("Update")]
+        [HarmonyTranspiler]
+        [HarmonyPriority(Priority.Last)]
+        private static IEnumerable<CodeInstruction> InjectMoveInputZero(IEnumerable<CodeInstruction> instructions)
+        {
+            var moveInputVectorField = AccessTools.Field(typeof(PlayerControllerB), "moveInputVector");
+            var helperMethod = AccessTools.Method(typeof(PlayerControllerPatch), nameof(ZeroMoveInputIfFreecam));
+
+            bool patched = false;
+            foreach (var instruction in instructions)
+            {
+                yield return instruction;
+
+                if (!patched && instruction.opcode == OpCodes.Stfld && (FieldInfo)instruction.operand == moveInputVectorField)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call, helperMethod);
+                    patched = true;
+                }
+            }
+        }
+
+        private static void ZeroMoveInputIfFreecam(PlayerControllerB instance)
+        {
+            if (instance.isFreeCamera) instance.moveInputVector = Vector2.zero;
         }
 
         [HarmonyPatch("Update")]

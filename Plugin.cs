@@ -8,6 +8,7 @@ using LethalConfig.ConfigItems.Options;
 using SimpleFreeCam.Input;
 using SimpleFreeCam.Patches;
 using SimpleFreeCam.UI;
+using UnityEngine;
 
 namespace SimpleFreeCam
 {
